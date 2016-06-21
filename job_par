@@ -1,0 +1,30 @@
+#!/bin/sh
+#PBS -l nodes=2:ppn=32:r641
+#PBS -l walltime=1:00:00
+#PBS -j oe
+#PBS -N PSRS_par_myr
+#PBS -M brunobarbosa.caos@gmail.com
+
+cd $PBS_O_WORKDIR
+
+module purge
+module load gnu/4.9.0
+#module load gnu/openmpi_eth/1.8.4
+module load gnu/openmpi_mx/1.8.4
+
+mpicc -O3 code.c -o psrs_mx -fopenmp -std=c99
+
+for nprocs in 1 2 4 8 12 16 20
+do
+	echo $nprocs "procs"
+	for((i=0;i<5;i++))
+	do
+		#mpirun -mca btl tcp,sm,self -np $nprocs psrs 
+		mpirun -np $nprocs --mca mtl mx --mca pml cm psrs_mx
+	done
+done
+
+
+
+
+
